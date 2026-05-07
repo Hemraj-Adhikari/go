@@ -1,0 +1,48 @@
+package main
+
+import (
+	"fmt"
+	"net"
+	"sync"
+	"time"
+)
+
+func scanPort(wg *sync.WaitGroup, host string, port int) {
+	defer wg.Done()
+
+	address := fmt.Sprintf("%s:%d", host, port)
+
+	conn, err := net.DialTimeout("tcp", address, 1*time.Second)
+
+	if err != nil {
+		return
+	}
+
+	conn.Close()
+	fmt.Printf("Port %d is OPEN\n", port)
+}
+
+func main() {
+	var host string
+
+	fmt.Println(" Go Port Scanner")
+	fmt.Print("Enter Target IP or Domain: ")
+	fmt.Scanln(&host)
+
+	start := time.Now()
+
+	var wg sync.WaitGroup
+
+	for port := 1; port <= 1024; port++ {
+		wg.Add(1)
+
+		go scanPort(&wg, host, port)
+	}
+
+	wg.Wait()
+
+	elapsed := time.Since(start)
+
+	fmt.Println("\n Scan Completed")
+	fmt.Println(" Time Taken:", elapsed)
+}
